@@ -1,0 +1,103 @@
+---
+title: "ggplot tutorial"
+author: "Peorth Chen"
+date: "2017/3/6"
+output:
+  ioslides_presentation:
+    incremental: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE )
+
+```
+
+## About me
+
+- Economist.
+- Data Analyst, KKBOX Data science team.
+- Amuture pâtissier and home chef.
+ 
+
+## What is data science?
+<img src="datascience_venn.png" width="600"  />
+
+
+## What does data scientist do? (Reversed)
+
+- Present your report with data visualization tool.
+    + ggplot helps here
+- Interpret data or apply proper statistical analysis. 
+- Obtain, clean, transform data. 
+    + "If you torture the data enough, nature will always confess."(Ronald Coase, 1981)
+    + [it can even be a mutual torturing activity](https://www.r-bloggers.com/a-glimpse-into-the-daily-life-of-a-data-scientist/)
+
+## What does data scientist do? (Reversed)
+
+- Know your data
+    + What is in it?
+    + What do those values mean?
+    + Distribution, frequency, correlation between variables
+    + Is there something wrong?
+    + ggplot also helps here!
+
+## What does data scientist do? (Reversed) 
+- Define questions. (or REdefine it, usually) 
+    + 「這首歌會紅嗎？」 (X)
+    + 「什麼數據或指標可以有效的預測歌曲熱門度？」 (O)
+    
+- Crucial steps. Sometimes you have to explore your data first then get a good question.
+- Difference between mediocre/tedious and intriguing/great data science project
+
+
+## An one million shot by graphical exploration
+
+<img src="influenza.png" width="600"  />
+
+[1918 flu pandemic](http://www.birdflubook.org/resources/brainerd1.pdf)
+
+
+## Environment
+```{r environment, echo=T, message=TRUE}
+library(tidyverse)
+```
+
+## Read data {.build}
+- [臺北市政府警察局交通警察大隊/交通事故資料](http://data.taipei/opendata/datalist/datasetMeta?oid=2f238b4f-1b27-4085-93e9-d684ef0e2735)
+- Use **read_csv** from **readr** instead the original **read.csv**.
+```{r read, echo=T, message=F}
+traffic <- read_csv("traffic_eng.csv")
+head(traffic)
+```
+
+## Explore the data 
+
+- 
+```{r explore, echo=T, message=F}
+traffic <- read_csv("~/Desktop/traffic_eng.csv")
+head(traffic)
+```
+
+
+
+## Explore the data with ggplot
+
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Output
+
+```{r cars, echo = TRUE}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r pressure}
+plot(pressure)
+```
+
