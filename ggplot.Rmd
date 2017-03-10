@@ -9,7 +9,6 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE )
-
 ```
 
 ## About me
@@ -25,63 +24,143 @@ knitr::opts_chunk$set(echo = FALSE )
 
 ## What does data scientist do? (Reversed)
 
-- Present your report with data visualization tool.
-    + ggplot helps here
-- Interpret data or apply proper statistical analysis. 
-- Obtain, clean, transform data. 
+- 運用資料視覺化工具呈現研究結果
+    + ggplot 的用處
+- 詮釋或利用適當的統計方法分析資料
+- 取得、清洗、轉化資料
     + "If you torture the data enough, nature will always confess."(Ronald Coase, 1981)
     + [it can even be a mutual torturing activity](https://www.r-bloggers.com/a-glimpse-into-the-daily-life-of-a-data-scientist/)
 
 ## What does data scientist do? (Reversed)
 
-- Know your data
-    + What is in it?
-    + What do those values mean?
-    + Distribution, frequency, correlation between variables
-    + Is there something wrong?
-    + ggplot also helps here!
+- 瞭解你的資料
+    + 裡面有些什麼?
+    + 資料欄位代表些什麼?
+    + 資料的分佈、變數間的關聯
+    + 裡頭有沒有錯?
+    + 也是ggplot 的用處!
 
 ## What does data scientist do? (Reversed) 
-- Define questions. (or REdefine it, usually) 
+- 定義問題. (但通常是「重新定義」問題) 
     + 「這首歌會紅嗎？」 (X)
     + 「什麼數據或指標可以有效的預測歌曲熱門度？」 (O)
     
-- Crucial steps. Sometimes you have to explore your data first then get a good question.
+- 最重要的兩個階段，但常常都需要先探索資料才會出現好的問題
 - Difference between mediocre/tedious and intriguing/great data science project
 
 
-## An one million shot by graphical exploration
+## 一圖值千金
 
 <img src="influenza.png" width="600"  />
 
 [1918 flu pandemic](http://www.birdflubook.org/resources/brainerd1.pdf)
 
 
-## Environment
+## 環境
 ```{r environment, echo=T, message=TRUE}
 library(tidyverse)
 ```
 
-## Read data {.build}
+## 讀入資料 {.build}
 - [臺北市政府警察局交通警察大隊/交通事故資料](http://data.taipei/opendata/datalist/datasetMeta?oid=2f238b4f-1b27-4085-93e9-d684ef0e2735)
-- Use **read_csv** from **readr** instead the original **read.csv**.
+- 使用**readr**的**read_csv**函數，而不是內建的**read.csv**
 ```{r read, echo=T, message=F}
 traffic <- read_csv("traffic_eng.csv")
-head(traffic)
+head(traffic, n=3)
 ```
 
-## Explore the data 
+## 探索資料　 {.build}
+- 看一下時間分佈好了　
+```{r explore hour, echo=T, message=F}
 
-- 
-```{r explore, echo=T, message=F}
-traffic <- read_csv("~/Desktop/traffic_eng.csv")
-head(traffic)
+traffic %>%
+    select(time.hour) %>%
+    summary()
+    
+```
+- 看的出來是24小時制的紀錄方式，但如果想知道整體分配，這樣好像沒什麼感覺
+
+## 探索資料　 {.build}
+- 看一下每小時的分配次數
+
+```{r explore hour 2, echo=T, message=F}
+
+traffic %>%
+    group_by(time.hour) %>%
+    count() -> pivot.time.hour
+pivot.time.hour %>% head(5)
+```
+- 5個值的話還好，24個呢? 60? 365?
+
+
+## 探索資料, ggplot
+```{r ggplot hour, echo=T, message=F}
+
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_bar(aes(x=time.hour, y=n), stat = "identity")
+print(qq)
 ```
 
 
+## 探索資料, ggplot
 
-## Explore the data with ggplot
+```{r ggplot hour 2, echo=T, message=F, eval=F}
 
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_bar(aes(x=time.hour, y=n), stat = "identity")
+print(qq)
+    
+```
+- 發生了什麼事？　
+- 準備好畫紙**ggplot()**，指定要畫的資料是**pivot.time.hour**
+- 疊加上一層長條圖**geom_bar()**，**aes()**指定x軸與y軸。
+- 資料已經計算好個數，**stat = "identity"**指定使用的數據是已算好的結果
+
+## 探索資料, ggplot　{.build} 
+- 圖表的類型可以輕易的被改變，利用折線圖**geom_line()**取代長條圖**geom_bar()**
+```{r ggplot hour 3, echo=T, message=F, eval=F}
+
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_line(aes(x=time.hour, y=n))
+print(qq)
+    
+```
+
+## 探索資料, ggplot　
+```{r ggplot hour 4, echo=T, message=F}
+
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_line(aes(x=time.hour, y=n))
+print(qq)
+    
+```
+
+
+## 探索資料, ggplot
+- 改看看這些事件在「幾分」的時候發生
+```{r ggplot minute, echo=T, message=F, eval=F}
+traffic %>%
+    group_by(time.minute) %>%
+    count() -> pivot.time.minute
+
+qq <- ggplot(data = pivot.time.minute)
+qq <- qq + geom_bar(aes(x=time.minute, y=n), stat = "identity")
+print(qq)
+    
+```
+
+## 探索資料, ggplot
+
+```{r ggplot minute 2, echo=F, message=F, eval=T}
+traffic %>%
+    group_by(time.minute) %>%
+    count() -> pivot.time.minute
+
+qq <- ggplot(data = pivot.time.minute)
+qq <- qq + geom_bar(aes(x=time.minute, y=n), stat = "identity")
+print(qq)
+    
+```
 
 ## Slide with Bullets
 
