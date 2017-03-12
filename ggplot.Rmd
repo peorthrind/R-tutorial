@@ -129,7 +129,7 @@ print(qq)
 
 
 ## ggplot and Grammar of Graphics {.build} 
-- 替換**geom_**。圖表的類型可以輕易的被改變，利用折線圖**geom_line()**取代長條圖**geom_bar()**
+- 圖表的類型可以輕易的被改變，利用折線圖**geom_line()**取代長條圖**geom_bar()**
 ```{r ggplot hour 3, echo=T, message=F, eval=F}
 
 qq <- ggplot(data = pivot.time.hour)
@@ -225,18 +225,13 @@ print(qq)
 - 圖上的字型，現在都變成<font color="red">微軟正黑體</font>的形狀啦!
 
 
-## Improve it! {.build}
-```{r ggplot hour 6pp, echo=F, message=F, eval=T}
-qq <- ggplot(data = pivot.hour.gender)
-qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
-qq <- qq + theme(text=element_text(family = "Microsoft JhengHei", 
-                                   colour="red")) 
-print(qq)
-```
+## Improve it! 
 
-- 還缺圖表標題
-- x軸與y軸的說明，x軸想要每3個小時畫一個標記，y軸的字能不能轉向?
-- 圖例補上標題，想放在底下
+- 把這張圖交出去的話會被電<s>沒被電的話你要懷疑你上司的程度</s>
+- 沒有圖表標題
+- x軸與y軸是什麼意思?
+- x軸想要每3個小時畫一個標記，y軸的字能不能轉向?
+- 圖例補上標題，放在底下
 
 
 ## Improve it! {.build}
@@ -270,6 +265,114 @@ qq <- qq + scale_x_continuous(breaks = seq(0,24,3))
 qq <- qq + scale_colour_discrete(name="當事人性別")
 print(qq)
 ```
+
+## It's show time!
+
+- 試試看利用簡單的敘述統計跟ggplot，探索一下這筆資料吧!
+- 畫個「分鐘」的長條圖，你會發現警察登記時的習性
+- 除了這個資料，我們準備了一些有趣的東西可以玩
+- 20年的大學榜單資料
+- moss要想辦法生出來的資料
+
+## 你的名字
+
+```{r data names, echo=T, message=F, eval=T}
+college.admission <- read_csv("college_admission.csv")
+college.admission %>% arrange(-n) %>% head(5)
+```
+
+## 菜市場來的
+```{r data names market, echo=F, message=F, eval=T}
+ college.admission %>%
+    #filter(year > 2010) %>%
+    group_by(first.name) %>%
+    summarise(n=sum(n)) %>% 
+    filter(n >= nth(x=n, n=10, order_by=-n)) %>%
+    `$`(first.name) -> market.names
+
+college.admission %>%
+    filter(first.name %in% market.names ) -> college_admission.save.plot
+
+qq <- ggplot(data = college_admission.save.plot)
+qq <- qq + geom_point(aes(x=year -18, y=n, colour=first.name))
+qq <- qq + geom_smooth(aes(x=year -18, y=n, colour=first.name), se=F)
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei"),
+                 legend.position = "bottom",
+                 legend.text = element_text(size=12))
+qq <- qq + labs(title="你的名字"　,subtitle="一叫十個人回頭", x="出生年", y="每10萬人中人數")
+qq <- qq + scale_colour_discrete(name="First name")
+print(qq)
+
+```
+
+
+
+## 聽起來就像學妹
+```{r data names rising, echo=F, message=F, eval=T}
+college.admission %>%
+    group_by(first.name) %>%
+    mutate(lag.n = lag(n, n=1,order_by=year ), 
+           growth.rate = log(n) - log(lag.n)) -> college_admission.growth 
+
+college_admission.growth %>%
+    filter(year > 2005) %>%
+    group_by(first.name) %>% 
+    summarise(mean.n = mean(n),
+              n=sum(n),
+              growth.sum = sum(growth.rate,na.rm = T)) %>% 
+    filter(mean.n > 20) %>%
+    filter(growth.sum >= nth(growth.sum, 10,order_by=-growth.sum ) )  %>%
+    `$`(first.name) -> rising.names
+
+college.admission %>%
+    filter(first.name %in%  rising.names ) -> college_admission.save.plot
+
+qq <- ggplot(data = college_admission.save.plot)
+qq <- qq + geom_point(aes(x=year-18, y=n, colour=first.name))
+qq <- qq + geom_smooth(aes(x=year-18, y=n, colour=first.name), se=F, alpha=0.5)
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei"),
+                 legend.position = "bottom",
+                 legend.text = element_text(size=12))
+qq <- qq + labs(title="你的名字"　,subtitle="Rising stars", x="出生年", y="每10萬人中人數")
+qq <- qq + scale_colour_discrete(name="First name")
+qq
+
+```
+
+## 好像轉到民視
+```{r data names old, echo=F, message=F, eval=T}
+
+college_admission.growth %>%
+    filter(year < 2000) %>%
+    group_by(first.name) %>% 
+    summarise(mean.n = mean(n),
+              n=sum(n),
+              growth.sum = sum(growth.rate,na.rm = T)) %>% 
+    filter(mean.n > 20) %>%
+    filter(growth.sum <= nth(growth.sum, 10,order_by=growth.sum ) )  %>%
+    `$`(first.name) -> no.see.names
+
+college.admission %>%
+    filter(first.name %in%  no.see.names ) -> college_admission.save.plot
+
+qq <- ggplot(data = college_admission.save.plot)
+qq <- qq + geom_point(aes(x=year-18, y=n, colour=first.name))
+qq <- qq + geom_smooth(aes(x=year-18, y=n, colour=first.name), se=F, alpha=0.5)
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei"),
+                 legend.position = "bottom",
+                 legend.text = element_text(size=12))
+qq <- qq + labs(title="你的名字"　,subtitle="是我媽的名字", x="出生年", y="每10萬人中人數")
+qq <- qq + scale_colour_discrete(name="First name")
+qq
+
+```
+
+
+
+
+
+## Let's try it!
+<img src="yoda.jpg" width="800"  />
 
 
 
