@@ -25,7 +25,7 @@ knitr::opts_chunk$set(echo = FALSE )
 ## What does data scientist do? (Reversed)
 
 - 運用資料視覺化工具呈現研究結果
-    + ggplot 的用處
+    + ggplot!
 - 詮釋或利用適當的統計方法分析資料
 - 取得、清洗、轉化資料
     + "If you torture the data enough, nature will always confess."(Ronald Coase, 1981)
@@ -74,14 +74,14 @@ head(traffic, n=3)
 ```{r explore hour, echo=T, message=F}
 
 traffic %>%
-    select(time.hour) %>%
+    select(time.month, time.day, time.hour, time.minute) %>%
     summary()
     
 ```
 - 看的出來是24小時制的紀錄方式，但如果想知道整體分配，這樣好像沒什麼感覺
 
 ## 探索資料　 {.build}
-- 看一下每小時的分配次數
+- 每小時的分配次數?
 
 ```{r explore hour 2, echo=T, message=F}
 
@@ -93,7 +93,7 @@ pivot.time.hour %>% head(5)
 - 5個值的話還好，24個呢? 60? 365?
 
 
-## 探索資料, ggplot
+## 探索資料, your first ggplot 
 ```{r ggplot hour, echo=T, message=F}
 
 qq <- ggplot(data = pivot.time.hour)
@@ -102,7 +102,7 @@ print(qq)
 ```
 
 
-## 探索資料, ggplot
+## 探索資料, your first ggplot 
 
 ```{r ggplot hour 2, echo=T, message=F, eval=F}
 
@@ -115,9 +115,21 @@ print(qq)
 - 準備好畫紙**ggplot()**，指定要畫的資料是**pivot.time.hour**
 - 疊加上一層長條圖**geom_bar()**，**aes()**指定x軸與y軸。
 - 資料已經計算好個數，**stat = "identity"**指定使用的數據是已算好的結果
+- **print()**把圖表印出來!
 
-## 探索資料, ggplot　{.build} 
-- 圖表的類型可以輕易的被改變，利用折線圖**geom_line()**取代長條圖**geom_bar()**
+## ggplot and Grammar of Graphics
+
+- ggplot遵循一套稱為"Grammar of Graphics"的設計準則，將圖表拆解成許多元素
+- 疊圖!
+- **aes()**代表了"Aesthetic mapping"，指定那些看的見的元素
+- 位置(x, y)、顏色(color, fill)、形狀(shape)、大小(size)......
+- **geom_**系列的函數，決定"Geometric object"，這些元素最後組成什麼圖表
+- 長條圖(bar)、散點圖(point)、折線圖(line)......etc.
+
+
+
+## ggplot and Grammar of Graphics {.build} 
+- 替換**geom_**。圖表的類型可以輕易的被改變，利用折線圖**geom_line()**取代長條圖**geom_bar()**
 ```{r ggplot hour 3, echo=T, message=F, eval=F}
 
 qq <- ggplot(data = pivot.time.hour)
@@ -126,57 +138,139 @@ print(qq)
     
 ```
 
-## 探索資料, ggplot　
-```{r ggplot hour 4, echo=T, message=F}
+## ggplot and Grammar of Graphics 　
 
+```{r ggplot hour 3p, echo=F, message=F}
 qq <- ggplot(data = pivot.time.hour)
 qq <- qq + geom_line(aes(x=time.hour, y=n))
 print(qq)
-    
 ```
 
-
-## 探索資料, ggplot
-- 改看看這些事件在「幾分」的時候發生
-```{r ggplot minute, echo=T, message=F, eval=F}
-traffic %>%
-    group_by(time.minute) %>%
-    count() -> pivot.time.minute
-
-qq <- ggplot(data = pivot.time.minute)
-qq <- qq + geom_bar(aes(x=time.minute, y=n), stat = "identity")
+## ggplot and Grammar of Graphics 　{.build} 
+- 甚至疊加!
+```{r ggplot hour 4, echo=T, message=F, eval=F}
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_line(aes(x=time.hour, y=n))
+qq <- qq + geom_point(aes(x=time.hour, y=n))
 print(qq)
-    
 ```
 
-## 探索資料, ggplot
-
-```{r ggplot minute 2, echo=F, message=F, eval=T}
-traffic %>%
-    group_by(time.minute) %>%
-    count() -> pivot.time.minute
-
-qq <- ggplot(data = pivot.time.minute)
-qq <- qq + geom_bar(aes(x=time.minute, y=n), stat = "identity")
+## ggplot and Grammar of Graphics 
+```{r ggplot hour 4p, echo=F, message=F, eval=T}
+qq <- ggplot(data = pivot.time.hour)
+qq <- qq + geom_line(aes(x=time.hour, y=n))
+qq <- qq + geom_point(aes(x=time.hour, y=n))
 print(qq)
-    
 ```
 
-## Slide with Bullets
+## 探索資料, more! 　{.build} 
+- <s>來戰南北囉啊不對這是台北市的資料</s>
+- 那就戰男女!!! 把剛才的時序資料，按照性別分開
+```{r ggplot hour 5, echo=T, message=F}
+traffic %>% 
+    group_by(time.hour, party.gender) %>% 
+    count() -> pivot.hour.gender
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+pivot.hour.gender %>% head(3)
 ```
 
-## Slide with Plot
+## 探索資料, 戰男女! 
 
-```{r pressure}
-plot(pressure)
+```{r ggplot hour 5p, echo=T, message=F, eval=F}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+print(qq)
 ```
+
+- **aes()**中依舊包含關於位置的資訊(x, y)，但是這次有新朋友**colour=party.gender**
+- 本來都是一樣的黑色，那顏色本身能不能包含資訊呢?
+- **colour=party.gender**代表「利用性別這個欄位，著上<font color="red">不</font><font color="orange">同</font><font color="yellow">的</font><font color="green">顏</font><font color="blue">色</font>！」
+- colour, size, shape......等等，都可以用這種方式呈現！
+
+## 探索資料, 戰男女! 
+- 需要外星翻譯官.......
+```{r ggplot hour 5pp, echo=F, message=F, eval=T}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+print(qq)
+```
+
+
+
+## More than data 
+
+- R是洋人的玩意ㄦ，ggplot也是......<s>八月丨五殺韃了!!!!</s>
+- 預設字型，顯示不了中文! 
+- 需要指定可以兼容的字型，交給**theme()**來處理這些資料以外的問題!
+
+
+## More than data {.build}
+```{r ggplot hour 6, echo=T, message=F, eval=F}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei", 
+                                   colour="red"))
+print(qq)
+```
+
+## More than data {.build}
+```{r ggplot hour 6p, echo=F, message=F, eval=T}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei", 
+                                   colour="red")) 
+print(qq)
+```
+
+- 圖上的字型，現在都變成<font color="red">微軟正黑體</font>的形狀啦!
+
+
+## Improve it! {.build}
+```{r ggplot hour 6pp, echo=F, message=F, eval=T}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei", 
+                                   colour="red")) 
+print(qq)
+```
+
+- 還缺圖表標題
+- x軸與y軸的說明，x軸想要每3個小時畫一個標記，y軸的字能不能轉向?
+- 圖例補上標題，想放在底下
+
+
+## Improve it! {.build}
+```{r ggplot hour 7, echo=T, message=F, eval=F}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei"), 
+                 axis.title.y = element_text(angle = 0, vjust = 0.5), 
+                 legend.position = "bottom") 
+qq <- qq + labs(title="台北市每時交通事故人數，按性別分",
+                x="時間", y="人數")
+qq <- qq + scale_x_continuous(breaks = seq(0,24,3))
+qq <- qq + scale_colour_discrete(name="當事人性別")
+print(qq)
+```
+- **theme()**裡新增了對y軸標題的修改，包括字串呈現的角度(angle)與位置(vjust)，並將圖例(legend)的位置放到底部
+- **labs()**指定x軸與y軸的變數說明，以及整張圖的大標題(title)
+- **scale_x_continuous()**每3個小時產生一個斷點(breaks)
+- **scale_colour_discrete()**修改圖例的名稱
+
+## Improve it! {.build}
+```{r ggplot hour 7p, echo=F, message=F, eval=T}
+qq <- ggplot(data = pivot.hour.gender)
+qq <- qq + geom_line(aes(x=time.hour, y=n, colour=party.gender))
+qq <- qq + theme(text=element_text(family = "Microsoft JhengHei"), 
+                 axis.title.y = element_text(angle = 0, vjust = 0.5), 
+                 legend.position = "bottom") 
+qq <- qq + labs(title="台北市每時交通事故人數，按性別分",
+                x="時間", y="人數")
+qq <- qq + scale_x_continuous(breaks = seq(0,24,3))
+qq <- qq + scale_colour_discrete(name="當事人性別")
+print(qq)
+```
+
+
+
 
